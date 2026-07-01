@@ -1,0 +1,144 @@
+{
+  "theme": "dark",
+  "archetype": "5 (Luxury)",
+  "typography": {
+    "headings": {
+      "family": "Cormorant Garamond, serif",
+      "weights": ["300", "400", "600"],
+      "usage": "H1-H4, expressive, elegant, and tracking-tight for large text",
+      "import_url": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap"
+    },
+    "body": {
+      "family": "Outfit, sans-serif",
+      "weights": ["300", "400", "500"],
+      "usage": "Body text, UI elements, labels, buttons",
+      "import_url": "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap"
+    },
+    "scale": {
+      "h1": "text-5xl sm:text-6xl tracking-tight leading-none",
+      "h2": "text-4xl sm:text-5xl tracking-tight leading-tight",
+      "h3": "text-2xl sm:text-3xl leading-snug",
+      "h4": "text-xl sm:text-2xl leading-snug",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm uppercase tracking-[0.2em]"
+    }
+  },
+  "colors": {
+    "background": "#050505",
+    "surface": "#111111",
+    "primary": "#D90429",
+    "primary_hover": "#ED1C24",
+    "text_main": "#FFFFFF",
+    "text_muted": "#A0A0A0",
+    "border": "#222222",
+    "card_bg": "#0A0A0A"
+  },
+  "layout": {
+    "spacing_system": "Generous spacing. p-8, p-12, py-24 for sections. Use gap-8 or gap-12 for bento grids.",
+    "container": "max-w-7xl mx-auto px-6 lg:px-12",
+    "grid_modes": {
+      "artists": "Bento Grid Mode A (Tetris Grid). grid-cols-1 md:grid-cols-8 lg:grid-cols-12 with varied spans (col-span-4 row-span-2, col-span-8, etc.) to create asymmetry and tension."
+    }
+  },
+  "components": {
+    "navigation": {
+      "style": "Crystal Glassmorphism over deep black or fixed solid black header with bottom border border-white/10. Include language selector (ES/EN/DE/FR) and Instagram icon/link.",
+      "behavior": "Sticky z-50 top-0."
+    },
+    "buttons": {
+      "primary": "bg-[#D90429] text-white hover:bg-[#ED1C24] px-8 py-3 rounded-none uppercase tracking-[0.2em] text-sm transition-all duration-300",
+      "outline": "border border-white/20 text-white hover:bg-white/10 px-8 py-3 rounded-none uppercase tracking-[0.2em] text-sm transition-all duration-300"
+    },
+    "cards": {
+      "style": "Flat solid background #0A0A0A, 1px subtle border border-white/10, no shadow. Hover: slight lift -translate-y-1, border-white/30."
+    },
+    "forms": {
+      "style": "Dark background inputs bg-[#111111] border-b border-white/20 focus:border-[#D90429] rounded-none outline-none text-white px-4 py-3 placeholder:text-white/40"
+    }
+  },
+  "motion": {
+    "scroll": "Use Lenis for smooth momentum scrolling.",
+    "reveal": "Fade in and slight upward motion (translate-y-4 to 0) on scroll using Framer Motion. Slow durations (0.8s) for cinematic feel.",
+    "hover": "Images in bento grid scale up slightly (scale-105) with darkened overlay transitioning to lighter. Red accents expand."
+  },
+  "pages_and_sections": [
+    {
+      "name": "Hero / Inicio",
+      "details": "Large, bold main logo centered. No wind animation. High contrast black background with dramatic lighting effect. Language selector prominent in header. Fullscreen height (min-h-screen).",
+      "test_id": "hero-section"
+    },
+    {
+      "name": "Artists Gallery",
+      "details": "Bento grid displaying Farruquito, Duquende, Montse Cortés, May Fernández, La Reina Gitana, Rubio de Pruna, Antonio El Farru, Cristian de Moret. Removed 'Voces con las que hemos caminado' and Diego Carrasco.",
+      "test_id": "artists-section"
+    },
+    {
+      "name": "Services",
+      "details": "List/Grid for: Producción de Conciertos, Programación Cultural para Ayuntamientos, Producción Técnica. Use elegant icons (Lucide or Phosphor) with red accents.",
+      "test_id": "services-section"
+    },
+    {
+      "name": "About / Quiénes Somos",
+      "details": "Text heavy, storytelling section. Mentions 30+ years in music production (removed 'Desde 1993'). Highlighting experience and passion.",
+      "test_id": "about-section"
+    },
+    {
+      "name": "Origin of Siroco",
+      "details": "A dedicated section explaining the name 'Siroco' - homage to Paco de Lucía's album and the Mediterranean wind. Moody, dark red accents.",
+      "test_id": "origin-section"
+    },
+    {
+      "name": "Contact Form",
+      "details": "Connects to DB. Fields for Name, Email, Subject, Message. Uses dark form fields.",
+      "test_id": "contact-section"
+    },
+    {
+      "name": "Footer",
+      "details": "Massive py-24 spacing. Includes Instagram link (https://www.instagram.com/sirocoproducciones).",
+      "test_id": "footer"
+    },
+    {
+      "name": "Admin Panel",
+      "details": "Secure login route (/admin) to manage artists, content, and view contact submissions.",
+      "test_id": "admin-login"
+    }
+  ],
+  "media": {
+    "image_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwxfHxhY291c3RpYyUyMGd1aXRhciUyMGNvbmNlcnR8ZW58MHx8fHwxNzgyODUwMDA1fDA&ixlib=rb-4.1.0&q=85",
+        "description": "person playing guitar",
+        "category": "services-music-production"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520167112707-56e25f2d7d6e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwyfHxhY291c3RpYyUyMGd1aXRhciUyMGNvbmNlcnR8ZW58MHx8fHwxNzgyODUwMDA1fDA&ixlib=rb-4.1.0&q=85",
+        "description": "photo of brown guitar fret",
+        "category": "origin-siroco-bg"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1605020420620-20c943cc4669",
+        "description": "brown acoustic guitar on brown wooden floor",
+        "category": "hero-bg-subtle"
+      },
+      {
+        "url": "https://images.pexels.com/photos/21898300/pexels-photo-21898300.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Close-up of the Pexels logo on a black background",
+        "category": "logo-placeholder"
+      }
+    ],
+    "artists_images_placeholders": "Main agent to use robust dynamic image IDs or search valid queries for the 8 artists.",
+    "icons_library": "lucide-react"
+  },
+  "instructions_to_main_agent": [
+    "Ensure all interactive elements have data-testid attributes.",
+    "Implement language selector in the header (ES/EN/DE/FR).",
+    "Make sure the 'Voces con las que hemos caminado', 'Diego Carrasco', and 'Desde 1993' are NOT included.",
+    "Remove any wind animations from the hero.",
+    "Use ONLY White, Black, and Red for the UI colors. No other colors.",
+    "Create the /admin route for managing content (artists, contact messages) with a DB connection.",
+    "Instagram link MUST be exactly: https://www.instagram.com/sirocoproducciones.",
+    "Use 'Cormorant Garamond' for headings and 'Outfit' for body text.",
+    "The frontend is in pure React JS, do NOT use TSX.",
+    "Ensure layout grids use the specified Bento Tetris format for the Artists gallery."
+  ]
+}
