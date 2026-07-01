@@ -1,6 +1,7 @@
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { Hero } from "../sections/Hero";
+import { Events } from "../sections/Events";
 import { Artists } from "../sections/Artists";
 import { Services } from "../sections/Services";
 import { About } from "../sections/About";
@@ -22,6 +23,7 @@ export default function Home() {
       ) : (
         <>
           <Hero />
+          <Events />
           <Services />
           <About />
           <Origin />
