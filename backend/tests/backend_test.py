@@ -5,8 +5,8 @@ import pytest
 import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://flamenco-multiidioma.preview.emergentagent.com").rstrip("/")
-ADMIN_EMAIL = "admin@sirocoproducciones.com"
-ADMIN_PASSWORD = "Siroco2026!"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@sirocoproducciones.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Siroco2026!")
 
 
 @pytest.fixture(scope="module")
@@ -64,7 +64,7 @@ class TestContact:
         r = api.post(f"{BASE_URL}/api/contact", json=payload, timeout=30)
         assert r.status_code == 200, r.text
         data = r.json()
-        assert data.get("success") is True
+        assert data.get("success") == True
         assert "id" in data
 
     def test_contact_persisted_in_admin(self, api, auth_headers):

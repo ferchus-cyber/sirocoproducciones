@@ -179,6 +179,9 @@ async def get_site_doc() -> dict:
     return doc
 
 # ---------------- Translation ----------------
+def _cache_key(lang: str, s: str) -> str:
+    return hashlib.sha256(f"{lang}:{s}".encode()).hexdigest()
+
 def _collect_strings(obj, acc):
     if isinstance(obj, str):
         if obj.strip():
@@ -205,7 +208,7 @@ async def translate_strings(strings: List[str], lang: str) -> Dict[str, str]:
     mapping: Dict[str, str] = {}
     to_translate = []
     for s in strings:
-        h = hashlib.md5(f"{lang}:{s}".encode()).hexdigest()
+        h = _cache_key(lang, s)
         cached = await db.translations.find_one({"_id": h})
         if cached:
             mapping[s] = cached["text"]
@@ -226,7 +229,7 @@ async def translate_strings(strings: List[str], lang: str) -> Dict[str, str]:
             translated = json.loads(txt)
             for src, tr in zip(to_translate, translated):
                 mapping[src] = tr
-                h = hashlib.md5(f"{lang}:{src}".encode()).hexdigest()
+                h = _cache_key(lang, src)
                 await db.translations.update_one({"_id": h}, {"$set": {"text": tr, "lang": lang}}, upsert=True)
         except Exception as e:
             logger.error(f"Translation error: {e}")

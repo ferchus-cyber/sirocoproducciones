@@ -20,7 +20,7 @@ export const Services = () => {
           {services.map((s, i) => {
             const Icon = ICONS[i % ICONS.length];
             return (
-              <Reveal key={i} delay={i * 0.1}>
+              <Reveal key={s.title} delay={i * 0.1}>
                 <div data-testid={`service-card-${i}`}
                   className="group h-full bg-[#050505] border border-white/10 p-8 hover:border-[#d90429]/60 hover:-translate-y-1 transition-all duration-500">
                   <Icon className="text-[#d90429] mb-6" size={34} strokeWidth={1.2} />
@@ -28,7 +28,7 @@ export const Services = () => {
                   <p className="text-white/60 text-sm leading-relaxed mb-6">{s.description}</p>
                   <ul className="space-y-2">
                     {(s.items || []).map((it, j) => (
-                      <li key={j} className="flex items-center gap-3 text-sm text-white/70">
+                      <li key={it} className="flex items-center gap-3 text-sm text-white/70">
                         <Check size={14} className="text-[#d90429] shrink-0" /> {it}
                       </li>
                     ))}

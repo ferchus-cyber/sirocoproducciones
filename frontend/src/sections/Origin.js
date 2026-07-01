@@ -18,7 +18,7 @@ export const Origin = () => {
         <div className="grid md:grid-cols-[1fr_auto] gap-12 items-start">
           <div className="space-y-6">
             {(o.paragraphs || []).map((p, i) => (
-              <Reveal key={i} delay={i * 0.08}>
+              <Reveal key={p.slice(0, 32)} delay={i * 0.08}>
                 <p className={`leading-relaxed ${i === 2 ? "text-white border-l-2 border-[#d90429] pl-6 italic font-display text-xl" : "text-white/65"}`}>{p}</p>
               </Reveal>
             ))}
