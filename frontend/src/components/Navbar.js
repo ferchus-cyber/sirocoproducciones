@@ -21,8 +21,8 @@ export const Navbar = () => {
     { id: "events", label: ui.nav_events || "Eventos" },
     { id: "artists", label: ui.nav_artists || "Artistas" },
     { id: "services", label: ui.nav_services || "Servicios" },
-    { id: "about", label: ui.nav_about || "Nosotros" },
-    { id: "origin", label: ui.nav_origin || "El Nombre" },
+    { id: "about", label: ui.nav_about || "Quienes Somos" },
+    { id: "origin", label: ui.nav_origin || "Origen" },
     { id: "contact", label: ui.nav_contact || "Contacto" },
   ];
 
