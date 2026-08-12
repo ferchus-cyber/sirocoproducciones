@@ -73,6 +73,9 @@ class ContactInput(BaseModel):
     subject: str
     message: str
 
+class NotifyInput(BaseModel):
+    email: EmailStr
+
 class Artist(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -265,6 +268,16 @@ async def create_contact(input: ContactInput):
     await db.contact_messages.insert_one(doc)
     return {"success": True, "id": doc["id"]}
 
+@api_router.post("/notify")
+async def create_notify(input: NotifyInput):
+    email = input.email.lower()
+    await db.notify_subscribers.update_one(
+        {"email": email},
+        {"$set": {"email": email}, "$setOnInsert": {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    return {"success": True}
+
 # ---------------- Auth endpoints ----------------
 @api_router.post("/auth/login")
 async def login(input: LoginInput):
@@ -316,6 +329,11 @@ async def delete_artist(artist_id: str, current=Depends(get_current_user)):
 async def get_messages(current=Depends(get_current_user)):
     msgs = await db.contact_messages.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
     return msgs
+
+@api_router.get("/admin/subscribers")
+async def get_subscribers(current=Depends(get_current_user)):
+    subs = await db.notify_subscribers.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return subs
 
 @api_router.delete("/admin/messages/{msg_id}")
 async def delete_message(msg_id: str, current=Depends(get_current_user)):
