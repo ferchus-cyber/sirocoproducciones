@@ -6,10 +6,7 @@ export const Origin = () => {
   const o = content?.origin || {};
   return (
     <section data-testid="origin-section" id="origin" className="relative py-28 overflow-hidden bg-black">
-      <div className="absolute inset-0 opacity-20">
-        <img src="/media/artists/farruquito.webp" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/80" />
-      </div>
+      <div className="absolute inset-0" style={{ background: "radial-gradient(90% 80% at 15% 20%, rgba(217,4,41,0.10) 0%, transparent 55%)" }} />
       <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-12">
         <Reveal>
           <p className="section-label mb-4">Siroco</p>

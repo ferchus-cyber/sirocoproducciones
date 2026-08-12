@@ -7,11 +7,10 @@ export const Hero = () => {
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <section data-testid="hero-section" id="home" className="relative min-h-screen flex items-center overflow-hidden">
+    <section data-testid="hero-section" id="home" className="relative min-h-screen flex items-center overflow-hidden bg-[#050505]">
       <div className="absolute inset-0">
-        <img src="/media/hero-bg.jpg" alt="" className="w-full h-full object-cover object-right opacity-80" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50" />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(120% 90% at 78% 35%, rgba(217,4,41,0.16) 0%, rgba(217,4,41,0.04) 30%, transparent 62%)" }} />
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full">
