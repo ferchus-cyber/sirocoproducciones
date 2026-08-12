@@ -5,7 +5,7 @@ export const About = () => {
   const { content } = useSite();
   const a = content?.about || {};
   return (
-    <section data-testid="about-section" id="about" className="py-24 bg-[#050505]">
+    <section data-testid="about-section" id="about" className="py-32 lg:py-44 bg-[#050505]">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-16 items-center">
         <Reveal>
           <p className="section-label mb-4">{a.title}</p>

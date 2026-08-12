@@ -10,11 +10,11 @@ export const Services = () => {
   const services = content?.services || [];
 
   return (
-    <section data-testid="services-section" id="services" className="py-24 bg-[#0a0a0a] border-y border-white/10">
+    <section data-testid="services-section" id="services" className="py-32 lg:py-44 bg-[#0a0a0a] border-y border-white/10">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <Reveal>
           <p className="section-label mb-4">Siroco Producciones</p>
-          <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-16">{ui.services_title}</h2>
+          <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-20">{ui.services_title}</h2>
         </Reveal>
         <div className="grid md:grid-cols-3 gap-6">
           {services.map((s, i) => {

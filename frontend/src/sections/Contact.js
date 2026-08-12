@@ -29,7 +29,7 @@ export const Contact = () => {
   const field = "w-full bg-[#111111] border-b border-white/20 focus:border-[#d90429] outline-none text-white px-4 py-3 placeholder:text-white/40 transition-colors";
 
   return (
-    <section data-testid="contact-section" id="contact" className="py-24 bg-[#0a0a0a] border-t border-white/10">
+    <section data-testid="contact-section" id="contact" className="py-32 lg:py-44 bg-[#0a0a0a] border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-16">
         <Reveal>
           <p className="section-label mb-4">{c.title}</p>

@@ -15,11 +15,11 @@ const EVENT = {
 export const Events = () => {
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   return (
-    <section data-testid="events-section" id="events" className="py-24 bg-[#0a0a0a] border-y border-white/10">
+    <section data-testid="events-section" id="events" className="py-32 lg:py-44 bg-[#0a0a0a] border-y border-white/10">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <Reveal>
           <p className="section-label mb-4">Agenda</p>
-          <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-16">Próximos Eventos</h2>
+          <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-20">Próximos Eventos</h2>
         </Reveal>
 
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">

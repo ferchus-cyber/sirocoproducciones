@@ -18,11 +18,11 @@ export const Artists = () => {
   const artists = content?.artists || [];
 
   return (
-    <section data-testid="artists-section" id="artists" className="py-24 bg-[#050505]">
+    <section data-testid="artists-section" id="artists" className="py-32 lg:py-44 bg-[#050505]">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <Reveal>
           <p className="section-label mb-4">{ui.artists_subtitle}</p>
-          <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-16">{ui.artists_title}</h2>
+          <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-20">{ui.artists_title}</h2>
         </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-12 auto-rows-[220px] gap-4">
