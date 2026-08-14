@@ -26,6 +26,7 @@ export const Events = () => {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [gallery, setGallery] = useState([]);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     api.get("/gallery")
@@ -34,6 +35,7 @@ export const Events = () => {
   }, []);
 
   const photos = gallery.length > 0 ? gallery : EVENT.fallbackGallery;
+  const visiblePhotos = showAll ? photos : photos.slice(0, 12);
 
   const subscribe = async (e) => {
     e.preventDefault();
@@ -95,9 +97,9 @@ export const Events = () => {
         <Reveal>
           <p className="section-label mb-8">Galería de fotos</p>
         </Reveal>
-        <div data-testid="event-gallery" className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-24">
-          {photos.map((img, i) => (
-            <Reveal key={img.url} delay={i * 0.05}>
+        <div data-testid="event-gallery" className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {visiblePhotos.map((img, i) => (
+            <Reveal key={img.url} delay={(i % 12) * 0.05}>
               <div className="group relative aspect-[4/3] overflow-hidden border border-white/10">
                 <img src={img.url} alt={img.caption || "Evento"} loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
@@ -107,6 +109,14 @@ export const Events = () => {
             </Reveal>
           ))}
         </div>
+        {photos.length > 12 && (
+          <div className="flex justify-center mt-12 mb-24">
+            <button data-testid="gallery-toggle" onClick={() => setShowAll((v) => !v)} className="btn-outline-siroco">
+              {showAll ? "Ver menos" : `Ver más (${photos.length - 12})`}
+            </button>
+          </div>
+        )}
+        {photos.length <= 12 && <div className="mb-24" />}
 
         {/* Notify form */}
         <Reveal>
