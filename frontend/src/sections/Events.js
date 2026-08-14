@@ -99,7 +99,7 @@ export const Events = () => {
           {photos.map((img, i) => (
             <Reveal key={img.url} delay={i * 0.05}>
               <div className="group relative aspect-[4/3] overflow-hidden border border-white/10">
-                <img src={img.url} alt={img.caption || "Evento"}
+                <img src={img.url} alt={img.caption || "Evento"} loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 {img.caption && <span className="absolute bottom-4 left-4 text-sm text-white/90 uppercase tracking-[0.15em]">{img.caption}</span>}

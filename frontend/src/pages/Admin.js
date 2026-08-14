@@ -143,10 +143,10 @@ export default function Admin() {
       </header>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex gap-2 mb-8 border-b border-white/10">
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-white/10">
           {tabs.map(([id, lbl]) => (
             <button key={id} data-testid={`tab-${id}`} onClick={() => setTab(id)}
-              className={`px-5 py-3 text-sm uppercase tracking-[0.15em] border-b-2 -mb-px transition-colors ${tab === id ? "border-[#d90429] text-white" : "border-transparent text-white/50 hover:text-white"}`}>{lbl}</button>
+              className={`px-4 sm:px-5 py-3 text-xs sm:text-sm uppercase tracking-[0.15em] border-b-2 -mb-px transition-colors whitespace-nowrap ${tab === id ? "border-[#d90429] text-white" : "border-transparent text-white/50 hover:text-white"}`}>{lbl}</button>
           ))}
         </div>
 
