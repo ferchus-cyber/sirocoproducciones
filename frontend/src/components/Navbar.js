@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Instagram, Menu, X, Globe, Check } from "lucide-react";
+import { Instagram, Youtube, Menu, X, Globe, Check } from "lucide-react";
 import { useSite, LANGS } from "../context/SiteContext";
 
 const INSTAGRAM = "https://www.instagram.com/sirocoproducciones?igsh=Y3FxM2phMHByaTd0&utm_source=qr";
+const YOUTUBE = "https://www.youtube.com/channel/UCAi-cO-560wUoA8S10tKLpg";
 
 export const Navbar = () => {
   const { content, lang, changeLang } = useSite();
@@ -75,6 +76,11 @@ export const Navbar = () => {
           <a data-testid="nav-instagram" href={INSTAGRAM} target="_blank" rel="noopener noreferrer"
             className="text-white/80 hover:text-[#d90429] transition-colors">
             <Instagram size={20} />
+          </a>
+
+          <a data-testid="nav-youtube" href={YOUTUBE} target="_blank" rel="noopener noreferrer"
+            className="text-white/80 hover:text-[#d90429] transition-colors">
+            <Youtube size={22} />
           </a>
 
           <button data-testid="mobile-menu-toggle" className="lg:hidden text-white" onClick={() => setOpen((v) => !v)}>

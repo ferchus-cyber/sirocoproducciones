@@ -146,7 +146,7 @@ DEFAULT_CONTENT = {
         "tagline": "Produccion artistica y espectaculos musicales",
         "subtitle": "Convertimos cada evento en una experiencia unica. Produccion, organizacion y gestion de conciertos y eventos culturales.",
         "cta_primary": "Solicita informacion",
-        "cta_secondary": "Descubre nuestros artistas",
+        "cta_secondary": "Descubre nuestros eventos",
     },
     "about": {
         "title": "Quienes Somos",

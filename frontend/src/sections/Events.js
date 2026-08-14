@@ -136,6 +136,21 @@ export const Events = () => {
           </Reveal>
         </div>
 
+        {/* Concert video */}
+        <Reveal>
+          <p className="section-label mb-8">Vídeo del concierto</p>
+          <div data-testid="event-video" className="relative w-full aspect-video border border-white/10 overflow-hidden mb-24">
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube-nocookie.com/embed/spaDQ5gEAWk"
+              title="Concierto Homenaje 75 Aniversario Camarón · Plaza del Rey"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </Reveal>
+
         {/* Photo gallery */}
         <Reveal>
           <p className="section-label mb-8">Galería de fotos</p>

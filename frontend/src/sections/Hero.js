@@ -42,7 +42,7 @@ export const Hero = () => {
           <button data-testid="hero-cta-contact" className="btn-siroco" onClick={() => scrollTo("contact")}>
             {h.cta_primary}
           </button>
-          <button data-testid="hero-cta-artists" className="btn-outline-siroco" onClick={() => scrollTo("artists")}>
+          <button data-testid="hero-cta-events" className="btn-outline-siroco" onClick={() => scrollTo("events")}>
             {h.cta_secondary}
           </button>
         </motion.div>

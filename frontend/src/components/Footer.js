@@ -1,7 +1,8 @@
-import { Instagram, Phone, Mail, MapPin } from "lucide-react";
+import { Instagram, Youtube, Phone, Mail, MapPin } from "lucide-react";
 import { useSite } from "../context/SiteContext";
 
 const INSTAGRAM = "https://www.instagram.com/sirocoproducciones?igsh=Y3FxM2phMHByaTd0&utm_source=qr";
+const YOUTUBE = "https://www.youtube.com/channel/UCAi-cO-560wUoA8S10tKLpg";
 
 export const Footer = () => {
   const { content } = useSite();
@@ -16,6 +17,10 @@ export const Footer = () => {
           <a data-testid="footer-instagram" href={INSTAGRAM} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 mt-6 text-white/70 hover:text-[#d90429] transition-colors text-sm">
             <Instagram size={18} /> @sirocoproducciones
+          </a>
+          <a data-testid="footer-youtube" href={YOUTUBE} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 mt-3 text-white/70 hover:text-[#d90429] transition-colors text-sm">
+            <Youtube size={20} /> Siroco Producciones
           </a>
         </div>
         <div className="space-y-3 text-sm text-white/60">
