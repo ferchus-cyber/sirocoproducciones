@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Reveal } from "../components/Reveal";
 import { api } from "../lib/api";
 import { toast } from "sonner";
-import { Calendar, MapPin, Users, CheckCircle2, Loader2, Bell } from "lucide-react";
+import { Calendar, MapPin, Users, CheckCircle2, Loader2, Bell, Building2 } from "lucide-react";
 import { EVENT_GALLERY } from "../data/eventGallery";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -14,6 +14,17 @@ const EVENT = {
   poster: "/media/events/camaron-75.jpg",
   lineup: ["Duquende", "El Farru", "May Fernández", "Rubio de Pruna", "Rosario Montoya «La Reina Gitana»"],
 };
+
+const UPCOMING = [
+  {
+    title: "Las Rodes",
+    tag: "Fiestas de Pinos Puente",
+    date: "Sábado 22 de agosto · 00:30 h",
+    venue: "Caseta Municipal · Recinto Ferial «El Silo», Pinos Puente (Granada)",
+    organizer: "Ayuntamiento de Pinos Puente · Siroco Producciones",
+    poster: "/media/events/las-rodes.jpg",
+  },
+];
 
 const STATIC_PHOTOS = EVENT_GALLERY.map((url) => ({ url, caption: "" }));
 
@@ -49,6 +60,43 @@ export const Events = () => {
   return (
     <section data-testid="events-section" id="events" className="py-32 lg:py-44 bg-[#0a0a0a] border-y border-white/10">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        {/* Upcoming events */}
+        <Reveal>
+          <p className="section-label mb-4">Agenda</p>
+          <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-6">Próximos Eventos</h2>
+          <p className="text-white/60 max-w-2xl mb-20">No te pierdas nuestras próximas citas con la música en directo.</p>
+        </Reveal>
+
+        {UPCOMING.map((ev) => (
+          <div key={ev.title} data-testid="upcoming-event" className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-28">
+            <Reveal>
+              <div className="relative group overflow-hidden border border-white/10">
+                <img data-testid="upcoming-poster" src={ev.poster} alt={ev.title}
+                  className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-[1.02]" />
+                <span className="absolute top-4 left-4 bg-[#d90429] text-white text-xs uppercase tracking-[0.2em] px-4 py-2">Próximo</span>
+              </div>
+            </Reveal>
+            <Reveal delay={0.15}>
+              <div className="border border-white/10 bg-[#050505] p-8 lg:p-10">
+                <span className="section-label">{ev.tag}</span>
+                <h3 className="font-display text-3xl sm:text-4xl mt-2 mb-8">{ev.title}</h3>
+                <div className="space-y-4 text-white/75">
+                  <p className="flex items-center gap-4"><Calendar size={18} className="text-[#d90429] shrink-0" /> {ev.date}</p>
+                  <p className="flex items-start gap-4"><MapPin size={18} className="text-[#d90429] shrink-0 mt-1" /> <span>{ev.venue}</span></p>
+                  <p className="flex items-start gap-4"><Building2 size={18} className="text-[#d90429] shrink-0 mt-1" /> <span>{ev.organizer}</span></p>
+                </div>
+                <button data-testid="upcoming-cta" className="btn-siroco mt-8"
+                  onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>
+                  Más información
+                </button>
+              </div>
+            </Reveal>
+          </div>
+        ))}
+
+        <div className="h-px bg-white/10 mb-24" />
+
+        {/* Recent events */}
         <Reveal>
           <p className="section-label mb-4">Recuerdos</p>
           <h2 className="font-display text-4xl sm:text-5xl tracking-tight mb-6">Eventos Recientes</h2>
