@@ -1,0 +1,53 @@
+{
+  "summary": "Verified Siroco Producciones fixes: (1) Event gallery renders 69 bundled static photos, independent of the (now empty) /api/gallery DB response. (2) Static assets served correctly. (3) WhatsApp floating button on both / and /admin with correct href. (4) Artists section and nav link fully removed from public site. (5) Admin login works and Galería tab shows 0 uploaded photos. All requested features pass.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "verification_details": {
+    "static_assets": {
+      "/media/events/gallery/ev-01.jpg": "200 image/jpeg",
+      "/media/events/gallery/ev-40.jpg": "200 image/jpeg",
+      "/media/events/gallery/ev-69.jpg": "200 image/jpeg",
+      "files_in_public_dir": 69
+    },
+    "public_api_gallery": "GET /api/gallery returns [] (expected)",
+    "event_gallery_ui": {
+      "initial_images_shown": 12,
+      "all_12_have_naturalWidth>0": true,
+      "sample_src": "https://flamenco-multiidioma.preview.emergentagent.com/media/events/gallery/ev-01.jpg (1500x1000)",
+      "gallery_toggle_text_before": "Ver más (57)",
+      "images_after_expand": 69,
+      "gallery_toggle_text_after": "Ver menos",
+      "images_after_collapse": 12
+    },
+    "whatsapp_float": {
+      "present_on_home": true,
+      "present_on_admin": true,
+      "href": "https://wa.me/34679360643?text=Hola%2C%20me%20gustar%C3%ADa%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Siroco%20Producciones.",
+      "position_bbox_home": "x=1840,y=1000 (bottom-right, visible without scrolling)"
+    },
+    "artists_removal": {
+      "artists-section_on_home": false,
+      "nav-artists_link": false,
+      "public_navbar_links_visible_in_screenshot": ["EVENTOS", "SERVICIOS", "QUIENES SOMOS", "ORIGEN", "CONTACTO"]
+    },
+    "admin": {
+      "login_success": true,
+      "tab-gallery_present": true,
+      "uploaded_photos_count": 0,
+      "message_shown": "Aún no hay fotos. Se mostrarán unas imágenes por defecto hasta que subas las tuyas."
+    }
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/backend/tests/test_gallery.py"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Admin panel still shows an 'ARTISTAS' tab even though public-facing artists section has been removed. If artists concept is fully deprecated, consider removing the admin-side Artistas tab and related endpoints for cleanliness. If admin CMS still uses it for internal data, this is fine.",
+    "Design note: eventGallery.js hardcodes 69 static paths — future admin-uploaded photos are appended at runtime, which is correct. Ensure the frontend build includes /public/media/events/gallery/ on every deploy (already the intent of the fix)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@sirocoproducciones.com / Siroco2026! (works)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 6 review-request items verified pass in the preview env. Login form inputs have data-testid admin-email and admin-password (no type=email); use these selectors. Submit button has no type=submit, click by text 'ACCEDER'. Gallery paths: /media/events/gallery/ev-01.jpg..ev-69.jpg (all 200)."
+}

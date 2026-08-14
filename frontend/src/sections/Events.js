@@ -3,6 +3,7 @@ import { Reveal } from "../components/Reveal";
 import { api } from "../lib/api";
 import { toast } from "sonner";
 import { Calendar, MapPin, Users, CheckCircle2, Loader2, Bell } from "lucide-react";
+import { EVENT_GALLERY } from "../data/eventGallery";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -12,15 +13,9 @@ const EVENT = {
   date: "Viernes 3 de Julio · San Fernando (Cádiz)",
   poster: "/media/events/camaron-75.jpg",
   lineup: ["Duquende", "El Farru", "May Fernández", "Rubio de Pruna", "Rosario Montoya «La Reina Gitana»"],
-  fallbackGallery: [
-    { url: "/media/artists/duquende.jpeg", caption: "Duquende" },
-    { url: "/media/artists/antonio-el-farru.jpg", caption: "El Farru" },
-    { url: "/media/artists/may-fernandez.jpg", caption: "May Fernández" },
-    { url: "/media/artists/rubio-de-pruna.jpeg", caption: "Rubio de Pruna" },
-    { url: "/media/artists/la-reina-gitana.jpg", caption: "La Reina Gitana" },
-    { url: "/media/artists/montse-cortes.jpeg", caption: "En directo" },
-  ],
 };
+
+const STATIC_PHOTOS = EVENT_GALLERY.map((url) => ({ url, caption: "" }));
 
 export const Events = () => {
   const [email, setEmail] = useState("");
@@ -34,7 +29,7 @@ export const Events = () => {
       .catch(() => setGallery([]));
   }, []);
 
-  const photos = gallery.length > 0 ? gallery : EVENT.fallbackGallery;
+  const photos = [...STATIC_PHOTOS, ...gallery];
   const visiblePhotos = showAll ? photos : photos.slice(0, 12);
 
   const subscribe = async (e) => {
