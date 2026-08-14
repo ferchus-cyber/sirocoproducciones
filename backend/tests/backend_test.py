@@ -64,7 +64,7 @@ class TestContact:
         r = api.post(f"{BASE_URL}/api/contact", json=payload, timeout=30)
         assert r.status_code == 200, r.text
         data = r.json()
-        assert data.get("success") == True
+        assert data.get("success")
         assert "id" in data
 
     def test_contact_persisted_in_admin(self, api, auth_headers):
