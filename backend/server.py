@@ -10,8 +10,8 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
 import requests
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, EmailStr
+from typing import List, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
 import hashlib
@@ -111,35 +111,7 @@ class ContactInput(BaseModel):
 class NotifyInput(BaseModel):
     email: EmailStr
 
-class Artist(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    role: str
-    bio: str
-    image: str
-    order: int = 0
-
-class SiteContent(BaseModel):
-    hero: Dict[str, Any]
-    about: Dict[str, Any]
-    origin: Dict[str, Any]
-    services: List[Dict[str, Any]]
-    contact: Dict[str, Any]
-    ui: Dict[str, Any]
-    artists: List[Artist]
-
 # ---------------- Seed content ----------------
-DEFAULT_ARTISTS = [
-    {"id": str(uuid.uuid4()), "name": "Farruquito", "role": "Baile Flamenco", "bio": "Heredero de la dinastia Farruco, es uno de los grandes referentes del baile flamenco puro, con un poderio y una pureza que emocionan sobre cualquier escenario.", "image": "/media/artists/farruquito.webp", "order": 1},
-    {"id": str(uuid.uuid4()), "name": "Duquende", "role": "Cante Flamenco", "bio": "Voz esencial del flamenco contemporaneo. Colaborador de Paco de Lucia, su cante hondo y personal lo ha convertido en una figura imprescindible.", "image": "/media/artists/duquende.jpeg", "order": 2},
-    {"id": str(uuid.uuid4()), "name": "Montse Cortes", "role": "Cante Flamenco", "bio": "Cantaora de raza gitana y una de las grandes voces del cante actual, con un recorrido junto a los mas grandes del genero.", "image": "/media/artists/montse-cortes.jpeg", "order": 3},
-    {"id": str(uuid.uuid4()), "name": "May Fernandez", "role": "Cante Flamenco", "bio": "Cantaora con arte y pureza, dueña de una gran presencia escenica y de una voz llena de sentimiento.", "image": "/media/artists/may-fernandez.jpg", "order": 4},
-    {"id": str(uuid.uuid4()), "name": "La Reina Gitana", "role": "Cante y Baile", "bio": "Artista de cante y baile que derrocha fuerza y duende en cada actuacion, conectando con el publico desde el primer compas.", "image": "/media/artists/la-reina-gitana.jpg", "order": 5},
-    {"id": str(uuid.uuid4()), "name": "Rubio de Pruna", "role": "Cante Flamenco", "bio": "Cantaor de hondura y tradicion, con un dominio del compas y una sensibilidad que reflejan la esencia del flamenco.", "image": "/media/artists/rubio-de-pruna.jpeg", "order": 6},
-    {"id": str(uuid.uuid4()), "name": "Antonio El Farru", "role": "Baile Flamenco", "bio": "Bailaor de la saga Farruco, combina tecnica y poderio en un estilo personal heredado de una de las mayores dinastias del baile.", "image": "/media/artists/antonio-el-farru.jpg", "order": 7},
-    {"id": str(uuid.uuid4()), "name": "Cristian de Moret", "role": "Cante Flamenco", "bio": "Joven cantaor y una de las promesas del flamenco contemporaneo, con una voz fresca y un profundo respeto por la tradicion.", "image": "/media/artists/cristian-de-moret.jpg", "order": 8},
-]
-
 DEFAULT_CONTENT = {
     "_id": "site",
     "hero": {
@@ -182,8 +154,7 @@ DEFAULT_CONTENT = {
         "location": "San Fernando (Cadiz), Andalucia, España",
     },
     "ui": {
-        "nav_home": "Inicio",
-        "nav_artists": "Artistas",
+        "nav_events": "Eventos",
         "nav_services": "Servicios",
         "nav_about": "Quienes Somos",
         "nav_origin": "Origen",
@@ -195,8 +166,6 @@ DEFAULT_CONTENT = {
         "form_send": "Enviar mensaje",
         "form_success": "Mensaje enviado. Gracias por contactar con Siroco Producciones.",
         "form_error": "Ocurrio un error. Intentalo de nuevo.",
-        "artists_title": "Nuestros Artistas",
-        "artists_subtitle": "El talento que da vida a cada escenario",
         "services_title": "Servicios",
         "footer_rights": "Todos los derechos reservados",
     },
@@ -210,10 +179,8 @@ async def get_site_doc() -> dict:
     if not doc:
         await db.site_content.insert_one(DEFAULT_CONTENT)
         doc = await db.site_content.find_one({"_id": "site"})
-    artists = await db.artists.find({}, {"_id": 0}).sort("order", 1).to_list(100)
     doc = dict(doc)
     doc.pop("_id", None)
-    doc["artists"] = artists
     return doc
 
 # ---------------- Translation ----------------
@@ -347,32 +314,10 @@ async def admin_content(current=Depends(get_current_user)):
 
 @api_router.put("/admin/content")
 async def update_content(payload: Dict[str, Any], current=Depends(get_current_user)):
-    payload.pop("artists", None)
     payload.pop("_id", None)
     await db.site_content.update_one({"_id": "site"}, {"$set": payload}, upsert=True)
     await db.translations.delete_many({})
     return await get_site_doc()
-
-@api_router.post("/admin/artists")
-async def create_artist(artist: Artist, current=Depends(get_current_user)):
-    doc = artist.model_dump()
-    await db.artists.insert_one({**doc, "_mongo": True})
-    await db.artists.update_one({"id": doc["id"]}, {"$unset": {"_mongo": ""}})
-    await db.translations.delete_many({})
-    return doc
-
-@api_router.put("/admin/artists/{artist_id}")
-async def update_artist(artist_id: str, artist: Artist, current=Depends(get_current_user)):
-    doc = artist.model_dump()
-    doc["id"] = artist_id
-    await db.artists.update_one({"id": artist_id}, {"$set": doc}, upsert=True)
-    await db.translations.delete_many({})
-    return doc
-
-@api_router.delete("/admin/artists/{artist_id}")
-async def delete_artist(artist_id: str, current=Depends(get_current_user)):
-    await db.artists.delete_one({"id": artist_id})
-    return {"success": True}
 
 @api_router.get("/admin/messages")
 async def get_messages(current=Depends(get_current_user)):
@@ -444,11 +389,9 @@ async def startup():
                                    "name": "Admin", "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()})
     elif not verify_password(admin_password, existing["password_hash"]):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
-    # seed content + artists
+    # seed content
     if not await db.site_content.find_one({"_id": "site"}):
         await db.site_content.insert_one(DEFAULT_CONTENT)
-    if await db.artists.count_documents({}) == 0:
-        await db.artists.insert_many([dict(a) for a in DEFAULT_ARTISTS])
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

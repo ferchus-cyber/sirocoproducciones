@@ -42,17 +42,14 @@ function Login({ onLogin }) {
   );
 }
 
-const emptyArtist = { name: "", role: "", bio: "", image: "/media/artists/", order: 99 };
-
 export default function Admin() {
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
-  const [tab, setTab] = useState("artists");
+  const [tab, setTab] = useState("gallery");
   const [content, setContent] = useState(null);
   const [messages, setMessages] = useState([]);
   const [gallery, setGallery] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [newArtist, setNewArtist] = useState(emptyArtist);
 
   useEffect(() => {
     const token = localStorage.getItem("siroco_token");
@@ -70,28 +67,10 @@ export default function Admin() {
   const logout = () => { localStorage.removeItem("siroco_token"); setUser(null); };
 
   const saveContent = async () => {
-    const { artists, ...rest } = content;
-    try { await api.put("/admin/content", rest); toast.success("Contenido guardado. Traducciones regeneradas."); }
+    try { await api.put("/admin/content", content); toast.success("Contenido guardado. Traducciones regeneradas."); }
     catch { toast.error("Error al guardar"); }
   };
 
-  const saveArtist = async (a) => {
-    try { await api.put(`/admin/artists/${a.id}`, a); toast.success("Artista actualizado"); }
-    catch { toast.error("Error"); }
-  };
-  const addArtist = async () => {
-    try {
-      const { data } = await api.post("/admin/artists", { ...newArtist, id: crypto.randomUUID() });
-      setContent({ ...content, artists: [...content.artists, data] });
-      setNewArtist(emptyArtist);
-      toast.success("Artista añadido");
-    } catch { toast.error("Error"); }
-  };
-  const delArtist = async (id) => {
-    await api.delete(`/admin/artists/${id}`);
-    setContent({ ...content, artists: content.artists.filter((x) => x.id !== id) });
-    toast.success("Eliminado");
-  };
   const delMsg = async (id) => {
     await api.delete(`/admin/messages/${id}`);
     setMessages(messages.filter((m) => m.id !== id));
@@ -129,9 +108,8 @@ export default function Admin() {
   if (!content) return <div className="min-h-screen flex items-center justify-center bg-[#050505]"><Loader2 className="animate-spin text-[#d90429]" size={36} /></div>;
 
   const setField = (section, key, value) => setContent({ ...content, [section]: { ...content[section], [key]: value } });
-  const setArtistField = (id, key, value) => setContent({ ...content, artists: content.artists.map((a) => a.id === id ? { ...a, [key]: value } : a) });
 
-  const tabs = [["artists", "Artistas"], ["gallery", `Galería (${gallery.length})`], ["texts", "Textos"], ["messages", `Mensajes (${messages.length})`]];
+  const tabs = [["gallery", `Galería (${gallery.length})`], ["texts", "Textos"], ["messages", `Mensajes (${messages.length})`]];
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
@@ -149,38 +127,6 @@ export default function Admin() {
               className={`px-4 sm:px-5 py-3 text-xs sm:text-sm uppercase tracking-[0.15em] border-b-2 -mb-px transition-colors whitespace-nowrap ${tab === id ? "border-[#d90429] text-white" : "border-transparent text-white/50 hover:text-white"}`}>{lbl}</button>
           ))}
         </div>
-
-        {tab === "artists" && (
-          <div className="space-y-4" data-testid="admin-artists">
-            {content.artists.map((a) => (
-              <div key={a.id} className="border border-white/10 bg-[#0a0a0a] p-5 grid md:grid-cols-[100px_1fr_auto] gap-5 items-start">
-                <img src={a.image} alt={a.name} className="w-24 h-24 object-cover object-top border border-white/10" />
-                <div className="grid sm:grid-cols-2 gap-3 w-full">
-                  <div><label className={label}>Nombre</label><input className={field} value={a.name} onChange={(e) => setArtistField(a.id, "name", e.target.value)} /></div>
-                  <div><label className={label}>Rol</label><input className={field} value={a.role} onChange={(e) => setArtistField(a.id, "role", e.target.value)} /></div>
-                  <div className="sm:col-span-2"><label className={label}>Bio</label><textarea rows={2} className={field} value={a.bio} onChange={(e) => setArtistField(a.id, "bio", e.target.value)} /></div>
-                  <div><label className={label}>Imagen (URL)</label><input className={field} value={a.image} onChange={(e) => setArtistField(a.id, "image", e.target.value)} /></div>
-                  <div><label className={label}>Orden</label><input type="number" className={field} value={a.order} onChange={(e) => setArtistField(a.id, "order", parseInt(e.target.value || "0"))} /></div>
-                </div>
-                <div className="flex md:flex-col gap-2">
-                  <button data-testid={`save-artist-${a.id}`} onClick={() => saveArtist(a)} className="btn-siroco !px-4 !py-2 flex items-center gap-2"><Save size={14} /></button>
-                  <button data-testid={`delete-artist-${a.id}`} onClick={() => delArtist(a.id)} className="btn-outline-siroco !px-4 !py-2 flex items-center gap-2"><Trash2 size={14} /></button>
-                </div>
-              </div>
-            ))}
-            <div className="border border-dashed border-white/20 bg-[#0a0a0a] p-5">
-              <p className="section-label mb-4">Añadir artista</p>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <input className={field} placeholder="Nombre" value={newArtist.name} onChange={(e) => setNewArtist({ ...newArtist, name: e.target.value })} />
-                <input className={field} placeholder="Rol" value={newArtist.role} onChange={(e) => setNewArtist({ ...newArtist, role: e.target.value })} />
-                <textarea className={`${field} sm:col-span-2`} placeholder="Bio" value={newArtist.bio} onChange={(e) => setNewArtist({ ...newArtist, bio: e.target.value })} />
-                <input className={field} placeholder="/media/artists/..." value={newArtist.image} onChange={(e) => setNewArtist({ ...newArtist, image: e.target.value })} />
-                <input type="number" className={field} placeholder="Orden" value={newArtist.order} onChange={(e) => setNewArtist({ ...newArtist, order: parseInt(e.target.value || "0") })} />
-              </div>
-              <button data-testid="add-artist" onClick={addArtist} className="btn-siroco mt-4 flex items-center gap-2"><Plus size={16} /> Añadir</button>
-            </div>
-          </div>
-        )}
 
         {tab === "texts" && (
           <div className="space-y-8 max-w-3xl" data-testid="admin-texts">

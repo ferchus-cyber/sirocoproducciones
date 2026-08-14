@@ -35,15 +35,22 @@ class TestSite:
         r = api.get(f"{BASE_URL}/api/site", params={"lang": "es"}, timeout=30)
         assert r.status_code == 200
         data = r.json()
-        assert "hero" in data and "artists" in data and "origin" in data
-        assert len(data["artists"]) >= 8
+        assert "hero" in data and "origin" in data
+        # artists feature fully removed
+        assert "artists" not in data, "artists key must not appear in /api/site"
         assert data["hero"].get("tagline")
+        assert data["ui"].get("nav_events") == "Eventos"
 
-    def test_site_en_no_crash(self, api):
-        # LLM key has 0 balance -> should fall back to Spanish, but must NOT crash
+    def test_site_en_nav_events_translated(self, api):
         r = api.get(f"{BASE_URL}/api/site", params={"lang": "en"}, timeout=60)
         assert r.status_code == 200
-        assert "hero" in r.json()
+        data = r.json()
+        assert "hero" in data
+        assert "artists" not in data
+        nav_events = data["ui"].get("nav_events")
+        assert nav_events, "ui.nav_events missing for lang=en"
+        # should be translated (not still 'Eventos')
+        assert nav_events.lower() != "eventos", f"nav_events not translated: {nav_events}"
 
     def test_site_invalid_lang_defaults_es(self, api):
         r = api.get(f"{BASE_URL}/api/site", params={"lang": "xx"}, timeout=30)
@@ -109,50 +116,44 @@ class TestAdmin:
     def test_get_admin_content(self, auth_headers):
         r = requests.get(f"{BASE_URL}/api/admin/content", headers=auth_headers, timeout=30)
         assert r.status_code == 200
-        assert "hero" in r.json() and "artists" in r.json()
+        data = r.json()
+        assert "hero" in data
+        # artists removed from admin content too
+        assert "artists" not in data
 
     def test_update_content_hero(self, auth_headers):
         # read
         r0 = requests.get(f"{BASE_URL}/api/admin/content", headers=auth_headers, timeout=30)
-        original = r0.json()["hero"]
-        new_hero = dict(original)
+        original_content = r0.json()
+        original_hero = original_content["hero"]
+        new_hero = dict(original_hero)
         new_hero["tagline"] = f"TEST_TAGLINE_{uuid.uuid4().hex[:6]}"
+        payload = dict(original_content)
+        payload["hero"] = new_hero
         r = requests.put(f"{BASE_URL}/api/admin/content",
-                         headers=auth_headers, json={"hero": new_hero}, timeout=30)
-        assert r.status_code == 200
+                         headers=auth_headers, json=payload, timeout=30)
+        assert r.status_code == 200, r.text
         # verify persisted
         r2 = requests.get(f"{BASE_URL}/api/admin/content", headers=auth_headers, timeout=30)
         assert r2.json()["hero"]["tagline"] == new_hero["tagline"]
         # restore
+        payload["hero"] = original_hero
         requests.put(f"{BASE_URL}/api/admin/content",
-                     headers=auth_headers, json={"hero": original}, timeout=30)
+                     headers=auth_headers, json=payload, timeout=30)
 
-    def test_artist_crud(self, auth_headers):
+    def test_artist_endpoints_removed(self, auth_headers):
         new_id = str(uuid.uuid4())
         payload = {"id": new_id, "name": "TEST_Artist", "role": "Test",
                    "bio": "bio", "image": "/media/test.jpg", "order": 99}
-        # CREATE
         r = requests.post(f"{BASE_URL}/api/admin/artists",
                           headers=auth_headers, json=payload, timeout=30)
-        assert r.status_code == 200
-        # verify in listing
-        r_all = requests.get(f"{BASE_URL}/api/admin/content", headers=auth_headers, timeout=30)
-        ids = [a["id"] for a in r_all.json()["artists"]]
-        assert new_id in ids
-        # UPDATE
-        payload["name"] = "TEST_Artist_Updated"
+        assert r.status_code == 404, f"POST /api/admin/artists should be 404, got {r.status_code}"
         r_u = requests.put(f"{BASE_URL}/api/admin/artists/{new_id}",
                            headers=auth_headers, json=payload, timeout=30)
-        assert r_u.status_code == 200
-        assert r_u.json()["name"] == "TEST_Artist_Updated"
-        # DELETE
+        assert r_u.status_code == 404
         r_d = requests.delete(f"{BASE_URL}/api/admin/artists/{new_id}",
                               headers=auth_headers, timeout=30)
-        assert r_d.status_code == 200
-        # verify deleted
-        r_all2 = requests.get(f"{BASE_URL}/api/admin/content", headers=auth_headers, timeout=30)
-        ids2 = [a["id"] for a in r_all2.json()["artists"]]
-        assert new_id not in ids2
+        assert r_d.status_code == 404
 
     def test_messages_require_auth(self):
         r = requests.get(f"{BASE_URL}/api/admin/messages", timeout=15)
