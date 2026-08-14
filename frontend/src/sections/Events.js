@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Reveal } from "../components/Reveal";
 import { api } from "../lib/api";
 import { toast } from "sonner";
 import { Calendar, MapPin, Users, CheckCircle2, Loader2, Bell } from "lucide-react";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const EVENT = {
   title: "75 Aniversario Camarón",
@@ -10,19 +12,28 @@ const EVENT = {
   date: "Viernes 3 de Julio · San Fernando (Cádiz)",
   poster: "/media/events/camaron-75.jpg",
   lineup: ["Duquende", "El Farru", "May Fernández", "Rubio de Pruna", "Rosario Montoya «La Reina Gitana»"],
-  gallery: [
-    { src: "/media/artists/duquende.jpeg", name: "Duquende" },
-    { src: "/media/artists/antonio-el-farru.jpg", name: "El Farru" },
-    { src: "/media/artists/may-fernandez.jpg", name: "May Fernández" },
-    { src: "/media/artists/rubio-de-pruna.jpeg", name: "Rubio de Pruna" },
-    { src: "/media/artists/la-reina-gitana.jpg", name: "La Reina Gitana" },
-    { src: "/media/artists/montse-cortes.jpeg", name: "En directo" },
+  fallbackGallery: [
+    { url: "/media/artists/duquende.jpeg", caption: "Duquende" },
+    { url: "/media/artists/antonio-el-farru.jpg", caption: "El Farru" },
+    { url: "/media/artists/may-fernandez.jpg", caption: "May Fernández" },
+    { url: "/media/artists/rubio-de-pruna.jpeg", caption: "Rubio de Pruna" },
+    { url: "/media/artists/la-reina-gitana.jpg", caption: "La Reina Gitana" },
+    { url: "/media/artists/montse-cortes.jpeg", caption: "En directo" },
   ],
 };
 
 export const Events = () => {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
+  const [gallery, setGallery] = useState([]);
+
+  useEffect(() => {
+    api.get("/gallery")
+      .then(({ data }) => setGallery(data.map((g) => ({ ...g, url: `${BACKEND_URL}${g.url}` }))))
+      .catch(() => setGallery([]));
+  }, []);
+
+  const photos = gallery.length > 0 ? gallery : EVENT.fallbackGallery;
 
   const subscribe = async (e) => {
     e.preventDefault();
@@ -85,13 +96,13 @@ export const Events = () => {
           <p className="section-label mb-8">Galería de fotos</p>
         </Reveal>
         <div data-testid="event-gallery" className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-24">
-          {EVENT.gallery.map((img, i) => (
-            <Reveal key={img.src} delay={i * 0.05}>
+          {photos.map((img, i) => (
+            <Reveal key={img.url} delay={i * 0.05}>
               <div className="group relative aspect-[4/3] overflow-hidden border border-white/10">
-                <img src={img.src} alt={img.name}
+                <img src={img.url} alt={img.caption || "Evento"}
                   className="absolute inset-0 w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <span className="absolute bottom-4 left-4 text-sm text-white/90 uppercase tracking-[0.15em]">{img.name}</span>
+                {img.caption && <span className="absolute bottom-4 left-4 text-sm text-white/90 uppercase tracking-[0.15em]">{img.caption}</span>}
               </div>
             </Reveal>
           ))}

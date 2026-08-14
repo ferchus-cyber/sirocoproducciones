@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../lib/api";
 import { toast } from "sonner";
-import { Loader2, LogOut, Trash2, Plus, Save, Mail } from "lucide-react";
+import { Loader2, LogOut, Trash2, Plus, Save, Mail, Upload } from "lucide-react";
 
 const field = "w-full bg-[#111] border border-white/15 focus:border-[#d90429] outline-none text-white px-3 py-2 text-sm transition-colors";
 const label = "block text-xs uppercase tracking-[0.15em] text-white/50 mb-2";
@@ -50,6 +50,8 @@ export default function Admin() {
   const [tab, setTab] = useState("artists");
   const [content, setContent] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [newArtist, setNewArtist] = useState(emptyArtist);
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function Admin() {
     if (!user) return;
     api.get("/admin/content").then(({ data }) => setContent(data));
     api.get("/admin/messages").then(({ data }) => setMessages(data));
+    api.get("/admin/gallery").then(({ data }) => setGallery(data.map((g) => ({ ...g, url: `${process.env.REACT_APP_BACKEND_URL}${g.url}` }))));
   }, [user]);
 
   const logout = () => { localStorage.removeItem("siroco_token"); setUser(null); };
@@ -94,6 +97,33 @@ export default function Admin() {
     setMessages(messages.filter((m) => m.id !== id));
   };
 
+  const uploadPhotos = async (files) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    const uploaded = [];
+    for (const file of Array.from(files)) {
+      const fd = new FormData();
+      fd.append("file", file);
+      try {
+        const { data } = await api.post("/admin/gallery", fd, { headers: { "Content-Type": "multipart/form-data" } });
+        uploaded.push({ ...data, url: `${process.env.REACT_APP_BACKEND_URL}${data.url}` });
+      } catch (e) {
+        toast.error(`Error al subir ${file.name}`);
+      }
+    }
+    if (uploaded.length) {
+      setGallery([...gallery, ...uploaded]);
+      toast.success(`${uploaded.length} foto(s) subida(s)`);
+    }
+    setUploading(false);
+  };
+
+  const delPhoto = async (id) => {
+    await api.delete(`/admin/gallery/${id}`);
+    setGallery(gallery.filter((g) => g.id !== id));
+    toast.success("Foto eliminada");
+  };
+
   if (checking) return <div className="min-h-screen flex items-center justify-center bg-[#050505]"><Loader2 className="animate-spin text-[#d90429]" size={36} /></div>;
   if (!user) return <Login onLogin={setUser} />;
   if (!content) return <div className="min-h-screen flex items-center justify-center bg-[#050505]"><Loader2 className="animate-spin text-[#d90429]" size={36} /></div>;
@@ -101,7 +131,7 @@ export default function Admin() {
   const setField = (section, key, value) => setContent({ ...content, [section]: { ...content[section], [key]: value } });
   const setArtistField = (id, key, value) => setContent({ ...content, artists: content.artists.map((a) => a.id === id ? { ...a, [key]: value } : a) });
 
-  const tabs = [["artists", "Artistas"], ["texts", "Textos"], ["messages", `Mensajes (${messages.length})`]];
+  const tabs = [["artists", "Artistas"], ["gallery", `Galería (${gallery.length})`], ["texts", "Textos"], ["messages", `Mensajes (${messages.length})`]];
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
@@ -190,6 +220,36 @@ export default function Admin() {
                 <p className="text-xs text-white/30 mt-3">{new Date(m.created_at).toLocaleString()}</p>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === "gallery" && (
+          <div data-testid="admin-gallery">
+            <div className="border border-dashed border-white/20 bg-[#0a0a0a] p-8 text-center mb-8">
+              <Upload className="text-[#d90429] mx-auto mb-4" size={30} strokeWidth={1.4} />
+              <p className="section-label mb-2">Galería de Eventos Recientes</p>
+              <p className="text-white/50 text-sm mb-6">Sube fotos del evento desde tu ordenador (JPG, PNG, WEBP).</p>
+              <label className="btn-siroco inline-flex items-center gap-2 cursor-pointer">
+                {uploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} Subir fotos
+                <input data-testid="gallery-upload" type="file" accept="image/*" multiple className="hidden"
+                  disabled={uploading} onChange={(e) => uploadPhotos(e.target.files)} />
+              </label>
+            </div>
+            {gallery.length === 0 ? (
+              <p className="text-white/50">Aún no hay fotos. Se mostrarán unas imágenes por defecto hasta que subas las tuyas.</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {gallery.map((g) => (
+                  <div key={g.id} className="relative group aspect-[4/3] overflow-hidden border border-white/10">
+                    <img src={g.url} alt="" className="w-full h-full object-cover" />
+                    <button data-testid={`delete-photo-${g.id}`} onClick={() => delPhoto(g.id)}
+                      className="absolute top-2 right-2 bg-black/70 text-white/80 hover:text-[#d90429] p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

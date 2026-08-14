@@ -5,10 +5,11 @@ import os
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends, UploadFile, File, Response
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
+import requests
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
@@ -27,6 +28,40 @@ db = client[os.environ['DB_NAME']]
 JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = "HS256"
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+
+# ---------------- Object Storage ----------------
+STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
+STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
+APP_NAME = "siroco"
+storage_key = None
+MIME_TYPES = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+              "gif": "image/gif", "webp": "image/webp"}
+
+def init_storage(force: bool = False):
+    global storage_key
+    if storage_key and not force:
+        return storage_key
+    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_LLM_KEY}, timeout=30)
+    resp.raise_for_status()
+    storage_key = resp.json()["storage_key"]
+    return storage_key
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    resp = requests.put(f"{STORAGE_URL}/objects/{path}",
+                        headers={"X-Storage-Key": key, "Content-Type": content_type},
+                        data=data, timeout=120)
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str) -> tuple:
+    key = init_storage()
+    resp = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
+    if resp.status_code == 404:
+        init_storage(force=True)
+        resp = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": storage_key}, timeout=60)
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -278,6 +313,20 @@ async def create_notify(input: NotifyInput):
     )
     return {"success": True}
 
+@api_router.get("/gallery")
+async def get_gallery():
+    items = await db.event_gallery.find({"is_deleted": False}, {"_id": 0}).sort("order", 1).to_list(200)
+    return [{"id": it["id"], "url": f"/api/files/{it['storage_path']}", "caption": it.get("caption", "")} for it in items]
+
+@api_router.get("/files/{path:path}")
+async def download_file(path: str):
+    record = await db.event_gallery.find_one({"storage_path": path, "is_deleted": False})
+    if not record:
+        raise HTTPException(status_code=404, detail="File not found")
+    data, content_type = get_object(path)
+    return Response(content=data, media_type=record.get("content_type", content_type),
+                    headers={"Cache-Control": "public, max-age=86400"})
+
 # ---------------- Auth endpoints ----------------
 @api_router.post("/auth/login")
 async def login(input: LoginInput):
@@ -335,6 +384,33 @@ async def get_subscribers(current=Depends(get_current_user)):
     subs = await db.notify_subscribers.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return subs
 
+@api_router.post("/admin/gallery")
+async def upload_gallery(file: UploadFile = File(...), current=Depends(get_current_user)):
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else "jpg"
+    content_type = MIME_TYPES.get(ext)
+    if not content_type:
+        raise HTTPException(status_code=400, detail="Formato no soportado. Usa JPG, PNG, WEBP o GIF.")
+    gid = str(uuid.uuid4())
+    path = f"{APP_NAME}/gallery/{gid}.{ext}"
+    data = await file.read()
+    result = put_object(path, data, content_type)
+    count = await db.event_gallery.count_documents({})
+    doc = {"id": gid, "storage_path": result["path"], "original_filename": file.filename,
+           "content_type": content_type, "caption": "", "order": count,
+           "is_deleted": False, "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.event_gallery.insert_one(doc)
+    return {"id": gid, "url": f"/api/files/{result['path']}", "caption": ""}
+
+@api_router.get("/admin/gallery")
+async def admin_gallery(current=Depends(get_current_user)):
+    items = await db.event_gallery.find({"is_deleted": False}, {"_id": 0}).sort("order", 1).to_list(200)
+    return [{"id": it["id"], "url": f"/api/files/{it['storage_path']}", "caption": it.get("caption", "")} for it in items]
+
+@api_router.delete("/admin/gallery/{gid}")
+async def delete_gallery(gid: str, current=Depends(get_current_user)):
+    await db.event_gallery.update_one({"id": gid}, {"$set": {"is_deleted": True}})
+    return {"success": True}
+
 @api_router.delete("/admin/messages/{msg_id}")
 async def delete_message(msg_id: str, current=Depends(get_current_user)):
     await db.contact_messages.delete_one({"id": msg_id})
@@ -354,6 +430,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 @app.on_event("startup")
 async def startup():
+    try:
+        init_storage()
+        logger.info("Storage initialized")
+    except Exception as e:
+        logger.error(f"Storage init failed: {e}")
     # seed admin
     admin_email = os.environ["ADMIN_EMAIL"].lower()
     admin_password = os.environ["ADMIN_PASSWORD"]
