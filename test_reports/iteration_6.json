@@ -1,0 +1,20 @@
+{
+  "summary": "SEO audit verification for Siroco Producciones. Ran 15 pytest HTTP/HTML assertions plus Playwright DOM checks against the preview URL. All SEO requirements pass: lang=es, correct <title>, non-generic meta description mentioning Siroco/flamenco/conciertos, meta robots index/follow, canonical=https://www.sirocoproducciones.es/, full OG (type/site_name/title/description/url/image/locale=es_ES) + Twitter summary_large_image, valid JSON-LD Organization (additionalType EntertainmentBusiness, telephone +34679360643, San Fernando/Cádiz/ES, sameAs Instagram+YouTube), favicon.png/apple-touch-icon.png/og-image.jpg all 200 with correct content-types and referenced in <head>, robots.txt Allow: / + Sitemap line with no global Disallow for User-agent:*, sitemap.xml has exactly ONE <loc>=canonical with lastmod 2026-08-15, and NO 'noindex' anywhere. DOM check confirms exactly 1 <h1> with sr-only class (1x1px, visually hidden) containing 'Siroco Producciones...' plus 6 h2 and 6 h3 (clean hierarchy). Home page renders Hero/logo/CTAs/footer normally — no visual regression.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": { "ui_bugs": [], "integration_issues": [], "design_issues": [] },
+  "test_report_links": [
+    "/app/backend/tests/test_seo.py",
+    "/app/test_reports/pytest/seo_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Preview environment prepends a Cloudflare-managed robots.txt block that contains 'Disallow: /' for specific AI crawlers (GPTBot, ClaudeBot, CCBot, etc.). This is Cloudflare infra, NOT part of /app/frontend/public/robots.txt, and will NOT be present when the site is served from the real production domain. Test was adjusted to check only the User-agent:* block for a global Disallow, which is absent. No action needed.",
+    "index.html JSON-LD uses '@type: Organization' with additionalType URL for EntertainmentBusiness — valid per schema.org. Consider also adding an explicit 'foundingDate' if known for richer SERP display (optional)."
+  ],
+  "updated_files": ["/app/backend/tests/test_seo.py"],
+  "success_rate": { "backend": "100% (15/15)", "frontend": "100% (h1/hierarchy/JSON-LD/render all pass)" },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "SEO test suite lives at /app/backend/tests/test_seo.py and covers head tags, OG/Twitter, JSON-LD, static assets (favicon/apple-touch-icon/og-image), robots.txt (accommodating Cloudflare AI-bot prepend), and sitemap.xml. Reuse for any SEO regression check. Frontend DOM h1 uniqueness is enforced by <h1 className='sr-only'> in /app/frontend/src/sections/Hero.js."
+}

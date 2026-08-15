@@ -14,6 +14,7 @@ export const Hero = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full">
+        <h1 className="sr-only">Siroco Producciones — Producción de espectáculos musicales y flamenco en Andalucía</h1>
         <motion.img
           data-testid="hero-logo"
           src="/media/siroco-logo.png"
