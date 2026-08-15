@@ -15,14 +15,17 @@ export const SiteProvider = ({ children }) => {
   const [lang, setLang] = useState(localStorage.getItem("siroco_lang") || "es");
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchContent = useCallback(async (l) => {
     setLoading(true);
+    setError(false);
     try {
       const { data } = await api.get(`/site`, { params: { lang: l } });
       setContent(data);
     } catch (e) {
       console.error("site fetch error", e);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -35,8 +38,10 @@ export const SiteProvider = ({ children }) => {
     setLang(l);
   };
 
+  const retry = () => fetchContent(lang);
+
   return (
-    <SiteContext.Provider value={{ lang, changeLang, content, loading }}>
+    <SiteContext.Provider value={{ lang, changeLang, content, loading, error, retry }}>
       {children}
     </SiteContext.Provider>
   );

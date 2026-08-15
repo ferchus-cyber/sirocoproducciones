@@ -211,19 +211,19 @@ def _apply_translations(obj, mapping):
 
 async def translate_strings(strings: List[str], lang: str) -> Dict[str, str]:
     mapping: Dict[str, str] = {}
-    to_translate = []
-    for s in strings:
-        h = _cache_key(lang, s)
-        cached = await db.translations.find_one({"_id": h})
-        if cached:
-            mapping[s] = cached["text"]
-        else:
-            to_translate.append(s)
-    to_translate = list(dict.fromkeys(to_translate))
+    unique = list(dict.fromkeys([s for s in strings if s and s.strip()]))
+    key_to_src = {_cache_key(lang, s): s for s in unique}
+    cached = await db.translations.find({"_id": {"$in": list(key_to_src.keys())}}).to_list(len(key_to_src) + 1)
+    cached_ids = set()
+    for doc in cached:
+        mapping[key_to_src[doc["_id"]]] = doc["text"]
+        cached_ids.add(doc["_id"])
+    to_translate = [key_to_src[k] for k in key_to_src if k not in cached_ids]
+
     if to_translate and EMERGENT_LLM_KEY:
         try:
             chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=f"translate-{lang}",
-                           system_message=f"You are a professional translator. Translate the given Spanish strings into {LANG_NAMES.get(lang, lang)}. Keep proper names of artists and 'Siroco Producciones', 'Paco de Lucia' unchanged. Return ONLY a JSON array of translated strings in the exact same order, no extra text.").with_model("gemini", "gemini-3-flash-preview")
+                           system_message=f"You are a professional translator. Translate the given Spanish strings into {LANG_NAMES.get(lang, lang)}. Keep proper names of artists and 'Siroco Producciones', 'Paco de Lucia' unchanged. Return ONLY a JSON array of translated strings in the exact same order and SAME LENGTH as the input, no extra text.").with_model("gemini", "gemini-3-flash-preview")
             payload = json.dumps(to_translate, ensure_ascii=False)
             resp = await chat.send_message(UserMessage(text=f"Translate these strings (JSON array): {payload}"))
             txt = resp.strip()
@@ -233,9 +233,13 @@ async def translate_strings(strings: List[str], lang: str) -> Dict[str, str]:
                     txt = txt[4:]
             translated = json.loads(txt)
             for src, tr in zip(to_translate, translated):
+                if not isinstance(tr, str) or not tr.strip():
+                    continue
                 mapping[src] = tr
-                h = _cache_key(lang, src)
-                await db.translations.update_one({"_id": h}, {"$set": {"text": tr, "lang": lang}}, upsert=True)
+                await db.translations.update_one({"_id": _cache_key(lang, src)}, {"$set": {"text": tr, "lang": lang}}, upsert=True)
+            # any string not translated (length mismatch) falls back to original
+            for src in to_translate:
+                mapping.setdefault(src, src)
         except Exception as e:
             logger.error(f"Translation error: {e}")
             for s in to_translate:

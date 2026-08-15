@@ -56,6 +56,27 @@ class TestSite:
         r = api.get(f"{BASE_URL}/api/site", params={"lang": "xx"}, timeout=30)
         assert r.status_code == 200
 
+    def test_site_en_services_title(self, api):
+        r = api.get(f"{BASE_URL}/api/site", params={"lang": "en"}, timeout=60)
+        assert r.status_code == 200
+        data = r.json()
+        assert data["ui"].get("nav_events") == "Events"
+        assert data["ui"].get("services_title") == "Services"
+
+    def test_site_de_no_crash_translated(self, api):
+        r = api.get(f"{BASE_URL}/api/site", params={"lang": "de"}, timeout=90)
+        assert r.status_code == 200
+        data = r.json()
+        assert "hero" in data and data["ui"].get("nav_events")
+        # Should not remain as Spanish "Eventos" after translation
+        # (allow fallback on very rare LLM failure but at least no crash)
+
+    def test_site_fr_no_crash_translated(self, api):
+        r = api.get(f"{BASE_URL}/api/site", params={"lang": "fr"}, timeout=90)
+        assert r.status_code == 200
+        data = r.json()
+        assert "hero" in data and data["ui"].get("nav_events")
+
 
 # --- Public: /api/contact ---
 class TestContact:

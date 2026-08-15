@@ -59,9 +59,9 @@ export default function Admin() {
 
   useEffect(() => {
     if (!user) return;
-    api.get("/admin/content").then(({ data }) => setContent(data));
-    api.get("/admin/messages").then(({ data }) => setMessages(data));
-    api.get("/admin/gallery").then(({ data }) => setGallery(data.map((g) => ({ ...g, url: `${process.env.REACT_APP_BACKEND_URL}${g.url}` }))));
+    api.get("/admin/content").then(({ data }) => setContent(data)).catch(() => toast.error("Error al cargar el contenido"));
+    api.get("/admin/messages").then(({ data }) => setMessages(data)).catch(() => {});
+    api.get("/admin/gallery").then(({ data }) => setGallery(data.map((g) => ({ ...g, url: `${process.env.REACT_APP_BACKEND_URL}${g.url}` })))).catch(() => {});
   }, [user]);
 
   const logout = () => { localStorage.removeItem("siroco_token"); setUser(null); };
@@ -72,8 +72,10 @@ export default function Admin() {
   };
 
   const delMsg = async (id) => {
-    await api.delete(`/admin/messages/${id}`);
-    setMessages(messages.filter((m) => m.id !== id));
+    try {
+      await api.delete(`/admin/messages/${id}`);
+      setMessages(messages.filter((m) => m.id !== id));
+    } catch { toast.error("No se pudo eliminar el mensaje"); }
   };
 
   const uploadPhotos = async (files) => {
@@ -98,9 +100,11 @@ export default function Admin() {
   };
 
   const delPhoto = async (id) => {
-    await api.delete(`/admin/gallery/${id}`);
-    setGallery(gallery.filter((g) => g.id !== id));
-    toast.success("Foto eliminada");
+    try {
+      await api.delete(`/admin/gallery/${id}`);
+      setGallery(gallery.filter((g) => g.id !== id));
+      toast.success("Foto eliminada");
+    } catch { toast.error("No se pudo eliminar la foto"); }
   };
 
   if (checking) return <div className="min-h-screen flex items-center justify-center bg-[#050505]"><Loader2 className="animate-spin text-[#d90429]" size={36} /></div>;
