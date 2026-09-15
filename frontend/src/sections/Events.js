@@ -17,13 +17,17 @@ const EVENT = {
 
 const UPCOMING = [
   {
-    title: "Las Rodes",
-    tag: "Fiestas de Pinos Puente",
-    date: "Sábado 22 de agosto · 00:30 h",
-    venue: "Caseta Municipal · Recinto Ferial «El Silo», Pinos Puente (Granada)",
-    organizer: "Ayuntamiento de Pinos Puente · Siroco Producciones",
-    poster: "/media/events/las-rodes.jpg",
+    title: "Recordando a la Leyenda",
+    tag: "Concierto Flamenco · Plaza del Rey",
+    date: "19 de septiembre · 21:30 h",
+    venue: "Plaza del Rey · San Fernando (Cádiz) · Entrada libre hasta completar aforo",
+    organizer: "Ayuntamiento de San Fernando · Siroco Producciones",
+    poster: "/media/events/recordando-leyenda.jpg",
   },
+];
+
+const PAST_POSTERS = [
+  { url: "/media/events/las-rodes.jpg", caption: "Las Rodes · Pinos Puente" },
 ];
 
 const STATIC_PHOTOS = EVENT_GALLERY.map((url) => ({ url, caption: "" }));
@@ -40,7 +44,7 @@ export const Events = () => {
       .catch(() => setGallery([]));
   }, []);
 
-  const photos = [...STATIC_PHOTOS, ...gallery];
+  const photos = [...PAST_POSTERS, ...STATIC_PHOTOS, ...gallery];
   const visiblePhotos = showAll ? photos : photos.slice(0, 12);
 
   const subscribe = async (e) => {
