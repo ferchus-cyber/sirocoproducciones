@@ -44,7 +44,7 @@ export const Events = () => {
       .catch(() => setGallery([]));
   }, []);
 
-  const photos = [...PAST_POSTERS, ...STATIC_PHOTOS, ...gallery];
+  const photos = [...STATIC_PHOTOS, ...gallery];
   const visiblePhotos = showAll ? photos : photos.slice(0, 12);
 
   const subscribe = async (e) => {
@@ -139,6 +139,23 @@ export const Events = () => {
             </div>
           </Reveal>
         </div>
+
+        {/* Past event posters */}
+        <Reveal>
+          <p className="section-label mb-8">Carteles de eventos anteriores</p>
+          <div data-testid="past-posters" className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-24">
+            {PAST_POSTERS.map((p) => (
+              <div key={p.url} className="relative group overflow-hidden border border-white/10">
+                <img src={p.url} alt={p.caption} loading="lazy"
+                  className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-[1.03]" />
+                <span className="absolute top-3 left-3 bg-[#d90429] text-white text-[10px] uppercase tracking-[0.2em] px-3 py-1.5">Celebrado</span>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 pt-10">
+                  <span className="text-sm text-white/90 uppercase tracking-[0.12em]">{p.caption}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
 
         {/* Concert video */}
         <Reveal>
