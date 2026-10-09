@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../lib/api";
 import { toast } from "sonner";
-import { Loader2, LogOut, Trash2, Plus, Save, Mail, Upload } from "lucide-react";
+import { Loader2, LogOut, Trash2, Plus, Save, Mail, Upload, Shield } from "lucide-react";
 
 const field = "w-full bg-[#111] border border-white/15 focus:border-[#d90429] outline-none text-white px-3 py-2 text-sm transition-colors";
 const label = "block text-xs uppercase tracking-[0.15em] text-white/50 mb-2";
@@ -50,6 +50,8 @@ export default function Admin() {
   const [messages, setMessages] = useState([]);
   const [gallery, setGallery] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [admins, setAdmins] = useState([]);
+  const [newAdmin, setNewAdmin] = useState({ email: "", name: "", password: "" });
 
   useEffect(() => {
     const token = localStorage.getItem("siroco_token");
@@ -62,6 +64,7 @@ export default function Admin() {
     api.get("/admin/content").then(({ data }) => setContent(data)).catch(() => toast.error("Error al cargar el contenido"));
     api.get("/admin/messages").then(({ data }) => setMessages(data)).catch(() => {});
     api.get("/admin/gallery").then(({ data }) => setGallery(data.map((g) => ({ ...g, url: `${process.env.REACT_APP_BACKEND_URL}${g.url}` })))).catch(() => {});
+    api.get("/admin/admins").then(({ data }) => setAdmins(data)).catch(() => {});
   }, [user]);
 
   const logout = () => { localStorage.removeItem("siroco_token"); setUser(null); };
@@ -107,13 +110,31 @@ export default function Admin() {
     } catch { toast.error("No se pudo eliminar la foto"); }
   };
 
+  const createAdmin = async () => {
+    try {
+      await api.post("/admin/admins", newAdmin);
+      const { data } = await api.get("/admin/admins");
+      setAdmins(data);
+      setNewAdmin({ email: "", name: "", password: "" });
+      toast.success("Administrador creado");
+    } catch (e) { toast.error(e.response?.data?.detail || "No se pudo crear el administrador"); }
+  };
+
+  const delAdmin = async (email) => {
+    try {
+      await api.delete(`/admin/admins/${encodeURIComponent(email)}`);
+      setAdmins(admins.filter((a) => a.email !== email));
+      toast.success("Administrador eliminado");
+    } catch (e) { toast.error(e.response?.data?.detail || "No se pudo eliminar"); }
+  };
+
   if (checking) return <div className="min-h-screen flex items-center justify-center bg-[#050505]"><Loader2 className="animate-spin text-[#d90429]" size={36} /></div>;
   if (!user) return <Login onLogin={setUser} />;
   if (!content) return <div className="min-h-screen flex items-center justify-center bg-[#050505]"><Loader2 className="animate-spin text-[#d90429]" size={36} /></div>;
 
   const setField = (section, key, value) => setContent({ ...content, [section]: { ...content[section], [key]: value } });
 
-  const tabs = [["gallery", `Galería (${gallery.length})`], ["texts", "Textos"], ["messages", `Mensajes (${messages.length})`]];
+  const tabs = [["gallery", `Galería (${gallery.length})`], ["texts", "Textos"], ["messages", `Mensajes (${messages.length})`], ["admins", `Administradores (${admins.length})`]];
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
@@ -200,6 +221,37 @@ export default function Admin() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {tab === "admins" && (
+          <div data-testid="admin-admins" className="max-w-3xl">
+            <div className="border border-dashed border-white/20 bg-[#0a0a0a] p-8 mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Shield className="text-[#d90429]" size={24} />
+                <p className="section-label !mb-0">Añadir administrador</p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div><label className={label}>Email</label><input data-testid="new-admin-email" type="email" className={field} value={newAdmin.email} onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })} /></div>
+                <div><label className={label}>Nombre</label><input data-testid="new-admin-name" className={field} value={newAdmin.name} onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })} /></div>
+                <div className="sm:col-span-2"><label className={label}>Contraseña (mín. 8 caracteres)</label><input data-testid="new-admin-password" type="password" className={field} value={newAdmin.password} onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })} /></div>
+              </div>
+              <button data-testid="create-admin" onClick={createAdmin} className="btn-siroco mt-5 flex items-center gap-2"><Plus size={16} /> Crear administrador</button>
+            </div>
+            <div className="space-y-3">
+              {admins.map((a) => (
+                <div key={a.email} className="flex items-center justify-between border border-white/10 bg-[#0a0a0a] p-5">
+                  <div>
+                    <p className="text-white flex items-center gap-2">{a.name} {a.is_self && <span className="text-xs text-[#d90429] uppercase tracking-[0.15em]">(tú)</span>}</p>
+                    <p className="text-sm text-white/50">{a.email}</p>
+                  </div>
+                  {!a.is_self && (
+                    <button data-testid={`delete-admin-${a.email}`} onClick={() => delAdmin(a.email)}
+                      className="text-white/40 hover:text-[#d90429] transition-colors"><Trash2 size={16} /></button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

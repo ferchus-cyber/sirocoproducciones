@@ -111,6 +111,11 @@ class ContactInput(BaseModel):
 class NotifyInput(BaseModel):
     email: EmailStr
 
+class AdminCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str = "Admin"
+
 # ---------------- Seed content ----------------
 DEFAULT_CONTENT = {
     "_id": "site",
@@ -332,6 +337,39 @@ async def get_messages(current=Depends(get_current_user)):
 async def get_subscribers(current=Depends(get_current_user)):
     subs = await db.notify_subscribers.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return subs
+
+@api_router.get("/admin/admins")
+async def list_admins(current=Depends(get_current_user)):
+    users = await db.users.find({}, {"password_hash": 0}).sort("created_at", 1).to_list(100)
+    return [{"email": u["email"], "name": u.get("name", "Admin"),
+             "is_self": u["email"] == current["email"],
+             "created_at": u.get("created_at")} for u in users]
+
+@api_router.post("/admin/admins")
+async def create_admin(payload: AdminCreate, current=Depends(get_current_user)):
+    email = payload.email.lower().strip()
+    if len(payload.password) < 8:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 8 caracteres.")
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(status_code=400, detail="Ya existe un administrador con ese email.")
+    await db.users.insert_one({
+        "email": email, "password_hash": hash_password(payload.password),
+        "name": payload.name or "Admin", "role": "admin",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    return {"email": email, "name": payload.name or "Admin"}
+
+@api_router.delete("/admin/admins/{email}")
+async def delete_admin(email: str, current=Depends(get_current_user)):
+    email = email.lower().strip()
+    if email == current["email"].lower():
+        raise HTTPException(status_code=400, detail="No puedes eliminar tu propia cuenta.")
+    if await db.users.count_documents({}) <= 1:
+        raise HTTPException(status_code=400, detail="Debe existir al menos un administrador.")
+    result = await db.users.delete_one({"email": email})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Administrador no encontrado.")
+    return {"success": True}
 
 @api_router.post("/admin/gallery")
 async def upload_gallery(file: UploadFile = File(...), current=Depends(get_current_user)):
